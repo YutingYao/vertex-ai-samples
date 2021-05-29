@@ -22,8 +22,8 @@ variable "project_id" {
 variable "gcs_region" {
     description = "The region for the GCS bucket"
     type        = string
+    default     = null
 }
-
 
 variable "zone" {
     description = "The zone for a Vertex Notebook instance"
@@ -55,7 +55,6 @@ variable "subnet_name" {
 variable "subnet_region" {
     description = "The region for the Notebook subnet"
     type        = string
-    default     = null
 }
 
 variable "boot_disk_size" {

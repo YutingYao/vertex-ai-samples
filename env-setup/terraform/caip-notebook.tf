@@ -14,7 +14,6 @@
 
 locals {
     image_project = "deeplearning-platform-release"
-    region = var.subnet_region == null ? var.gcs_region : var.subnet_region
 }
 
 data "google_compute_network" "vm_network" {
@@ -29,7 +28,7 @@ data "google_compute_network" "vm_network" {
 data "google_compute_subnetwork" "vm_subnetwork" {
     project = module.project-services.project_id
     name   = var.subnet_name
-    region = local.region
+    region = var.subnet_region
 
     depends_on = [
         module.project-services
