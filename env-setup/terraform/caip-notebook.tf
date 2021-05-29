@@ -29,7 +29,7 @@ data "google_compute_network" "vm_network" {
 data "google_compute_subnetwork" "vm_subnetwork" {
     project = module.project-services.project_id
     name   = var.subnet_name
-    region = local.subnet_region
+    region = local.region
 
     depends_on = [
         module.project-services
