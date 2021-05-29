@@ -33,7 +33,7 @@ To provision the environment:
 
 - Download the installation scripts
 ```
-SRC_REPO=https://github.com/jarokaz/vertex_ai_samples
+SRC_REPO=https://github.com/jarokaz/vertex-ai-samples
 kpt pkg get $SRC_REPO/env-setup@master vertex-ai-env-setup
 ```
 
