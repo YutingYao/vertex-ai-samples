@@ -19,20 +19,18 @@ You can customize your configuration using a set of variables:
 |network_name|No|default|A name of the Notebook instance's network|
 |subnet_name|No|default|A name of the Notebook instance's subnet|
 |boot_disk_size|No|200GB|A size of the Notebook instance's boot disk|
-|image_family|Yes||An image family for the Notebook instance|
-|gpu_type|No|null|A GPU type of the Notebook instance|
+|image_family|No|tf2-ent-latest-gpu|An image family for the Notebook instance|
+|gpu_type|No|null|A GPU type of the Notebook instance. By default, the Notebook instance will be provisioned without a GPU|
 |gpu_count|No|null|A GPU count of the Notebook instance|
 |install_gpu_driver|No|false|Whether to install a GPU driver|
-|force_destroy|No|false|Whether to force the removal of the bucket on terraform destroy. **Note that by default the bucket will not be destroyed**.|
+|force_destroy|No|false|Whether to force the removal of the bucket on terraform destroy.**Note that by default the bucket will not be destroyed**.|
 
-
-You can set the required variables and change the defaults by updating the `terraform/terraform.tfvars` file or supplying the values using the Terraform CLI `-var` option.
 
 To provision the environment:
 
 - Set the `terraform` directory as your current directory
 
-- (Optional) Update the `terraform/terraform.tfvars` file with the values reflecting your environment. Alternatively you can provide the values using the Terraform CLI `-var` options in the next step
+- Update the `terraform/terraform.tfvars` file with the values reflecting your environment. Alternatively you can provide the values using the Terraform CLI `-var` options in the next step
 
 - Execute the following commands. :
 ```
