@@ -17,10 +17,12 @@ locals {
 }
 
 data "google_compute_network" "vm_network" {
-  name = var.network_name
+  project = module.project-services.project_id
+  name    = var.network_name
 }
 
 data "google_compute_subnetwork" "vm_subnetwork" {
+  project = module.project-services.project_id
   name   = var.subnet_name
   region = var.region
 }
