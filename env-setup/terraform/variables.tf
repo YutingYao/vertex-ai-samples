@@ -1,3 +1,19 @@
+
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 variable "project_id" {
     description = "The GCP project ID"
     type        = string
@@ -9,7 +25,7 @@ variable "region" {
 }
 
 variable "zone" {
-    description = "The zone for the GCE node"
+    description = "The zone for a Vertex Notebook instance"
     type        = string
 }
 
@@ -19,48 +35,46 @@ variable "name_prefix" {
 }
 
 variable "machine_type" {
-    description = "The node's machine type"
+    description = "The Notebook instance's machine type"
     type        = string
 }
 
 variable "network_name" {
-  description = "The network name"
+  description = "The network name for the Notebook instance"
   type        = string
   default     = "default"
 }
 
 variable "subnet_name" {
-  description = "The subnet name"
+  description = "The subnet name for the Notebook instance"
   type        = string
   default     = "default"
 }
 
 variable "boot_disk_size" {
     description = "The size of the boot disk"
-    default     = 100
+    default     = 200
 }
 
 variable "image_family" {
-    description = "The Deep Learning image family"
+    description = "A Deep Learning image family for the Notebook instance"
     type        = string
-    default     = "common-cu110"
 }
 
-
 variable "gpu_type" {
-    description = "GPU type"
+    description = "A GPU type for the Notebook instance"
     type        = string
     default     = null
 }
 
 variable "gpu_count" {
-    description = "GPU count"
+    description = "A GPU count for the Notebook instance"
     type        = string
     default     = null
 }
 
 variable "install_gpu_driver" {
-    description = "Install GPU driver"
+    description = "Whether to install GPU driver"
     type        = bool
     default     = false
 }

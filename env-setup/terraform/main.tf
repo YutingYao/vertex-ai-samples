@@ -6,7 +6,7 @@ terraform {
 
   backend "gcs" {
     bucket  = "jk-terraform-state"
-    prefix  = "vertex-dev-env"
+    prefix  = "vertex-ai-v-env"
   }
 }
 
@@ -17,3 +17,7 @@ provider "google" {
 data "google_project" "project" {}
 
 data "google_compute_default_service_account" "default" {}
+
+output "project" {
+  value = data.google_client_config.current.project
+}
