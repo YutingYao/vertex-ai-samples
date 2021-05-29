@@ -18,10 +18,10 @@ terraform {
     google = "~> 3.6"
   }
 
-  backend "gcs" {
-    bucket  = "jk-terraform-state"
-    prefix  = "vertex-ai-v-env"
-  }
+#  backend "gcs" {
+#    bucket  = "jk-terraform-state"
+#    prefix  = "vertex-ai-v-env"
+#  }
 }
 
 provider "google" {

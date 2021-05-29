@@ -23,7 +23,7 @@ You can customize your configuration using a set of variables:
 |gpu_type|No|null|A GPU type of the Notebook instance. By default, the Notebook instance will be provisioned without a GPU|
 |gpu_count|No|null|A GPU count of the Notebook instance|
 |install_gpu_driver|No|false|Whether to install a GPU driver|
-|force_destroy|No|false|Whether to force the removal of the bucket on terraform destroy.**Note that by default the bucket will not be destroyed**.|
+|force_destroy|No|false|Whether to force the removal of the bucket on terraform destroy. **Note that by default the bucket will not be destroyed**.|
 
 
 To provision the environment:
