@@ -25,10 +25,15 @@ terraform {
 }
 
 provider "google" {
-    project   = var.project_id 
+    project = var.project_id 
+    region  = var.region
 }
 
-data "google_project" "project" {}
+data "google_client_config" "current" {}
+
+data "google_project" "project" {
+    project_id = var.project_id    
+}
 
 data "google_compute_default_service_account" "default" {}
 
