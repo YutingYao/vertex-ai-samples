@@ -12,12 +12,13 @@ You can customize your configuration using a set of variables:
 |Variable|Required|Default|Description|
 |--------|--------|-------|-----------|
 |project_id|Yes||A GCP project ID|
-|region|Yes||A GCP region for the GCS bucket|
-|zone|Yes||A GCP zone for the Notebook instance|
+|gcs_region|Yes||A GCP region for the GCS bucket|
+|network_name|No|default|A name of the network for the Notebook instance. The network must already exist.|
+|subnet_name|No|default|A name of the subnet for the Notebook instance. The subnet must already exist.|
+|subnet_region|No|Set to gcs_region|A region where the subnet has been created. It is recommended that the same region is used for both the bucket and the Notebook instance. If not provided the `gcs_region` will be used.|
+|zone|Yes||A GCP zone for the Notebook instance. The zone must be in the region defined in the `region` variable|
 |name_prefix|Yes||A prefix added to the names of provisioned resources|
 |machine_type|No|n1-standard-4|A machine type of the  Notebook instance|
-|network_name|No|default|A name of the Notebook instance's network|
-|subnet_name|No|default|A name of the Notebook instance's subnet|
 |boot_disk_size|No|200GB|A size of the Notebook instance's boot disk|
 |image_family|No|tf2-ent-latest-gpu|An image family for the Notebook instance|
 |gpu_type|No|null|A GPU type of the Notebook instance. By default, the Notebook instance will be provisioned without a GPU|

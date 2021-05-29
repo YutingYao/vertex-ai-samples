@@ -1,5 +1,5 @@
-project_id = "jk-mlops-dev"
-region = "us-west1"
+project_id = "jk-vertex-test1"
+gcs_region = "us-west1"
 zone = "us-west1-a"
 name_prefix = "jk-vertex-env"
 machine_type = "n1-standard-8"
