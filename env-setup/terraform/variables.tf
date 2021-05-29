@@ -76,5 +76,11 @@ variable "gpu_count" {
 variable "install_gpu_driver" {
     description = "Whether to install GPU driver"
     type        = bool
+    default     = true
+}
+
+variable "force_destroy" {
+    description = "Whether to remove the bucket on destroy"
+    type        = bool
     default     = false
 }

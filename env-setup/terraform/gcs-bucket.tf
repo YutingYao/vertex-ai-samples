@@ -13,10 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+locals {
+    bucket_type = "REGIONAL"
+}
+
 resource "google_storage_bucket" "artifact_repo" {
     project       = module.project-services.project_id
     name          = "${var.name_prefix}-bucket"
     location      = var.region
-    storage_class = "REGIONAL"
-    force_destroy = false
+    storage_class = local.bucket_type
+    force_destroy = var.force_destroy
 }
