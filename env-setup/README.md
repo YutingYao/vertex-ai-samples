@@ -29,7 +29,15 @@ You can customize your configuration using a set of variables:
 
 To provision the environment:
 
-- Set the `terraform` directory as your current directory
+- Open [Cloud Shell](https://cloud.google.com/shell/docs/launching-cloud-shell)
+
+- Download the installation scripts
+```
+SRC_REPO=https://github.com/jarokaz/vertex_ai_samples
+kpt pkg get $SRC_REPO/env-setup@master vertex-ai-env-setup
+```
+
+- Set the `vertex-ai-env-setup/terraform` directory as your current directory
 
 - Update the `terraform/terraform.tfvars` file with the values reflecting your environment. Alternatively you can provide the values using the Terraform CLI `-var` options in the next step
 
