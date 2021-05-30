@@ -34,7 +34,9 @@ To provision the environment:
 - Download the installation scripts
 ```
 SRC_REPO=https://github.com/jarokaz/vertex-ai-samples
-kpt pkg get $SRC_REPO/env-setup@main vertex-ai-env-setup
+LOCAL_DIR=vertex-ai-env-setup
+kpt pkg get $SRC_REPO/env-setup@main $LOCAL_DIR
+cd LOCAL_DIR
 ```
 
 - Set the `vertex-ai-env-setup/terraform` directory as your current directory
