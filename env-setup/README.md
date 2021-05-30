@@ -11,19 +11,19 @@ You can customize your configuration using the following variables:
 
 |Variable|Required|Default|Description|
 |--------|--------|-------|-----------|
-|name_prefix|Yes||A prefix added to the names of provisioned resources|
-|project_id|Yes||A GCP project ID|
-|network_name|No|default|A name of the network for the Notebook instance. The network must already exist.|
-|subnet_name|No|default|A name of the subnet for the Notebook instance. The subnet must already exist.|
-|subnet_region|No||A region where the subnet was created.|
-|zone|Yes||A GCP zone for the Notebook instance. The zone must be in the region defined in the `subnet_region` variable|
-|machine_type|No|n1-standard-4|A machine type of the  Notebook instance|
-|boot_disk_size|No|200GB|A size of the Notebook instance's boot disk|
-|image_family|No|tf2-ent-latest-gpu|An image family for the Notebook instance|
-|gpu_type|No|null|A GPU type of the Notebook instance. By default, the Notebook instance will be provisioned without a GPU|
-|gpu_count|No|null|A GPU count of the Notebook instance|
+|name_prefix|Yes||Prefix added to the names of provisioned resources|
+|project_id|Yes||GCP project ID|
+|network_name|No|default|Name of the network for the Notebook instance. The network must already exist.|
+|subnet_name|No|default|Name of the subnet for the Notebook instance. The subnet must already exist.|
+|subnet_region|No||Region where the subnet was created.|
+|zone|Yes||GCP zone for the Notebook instance. The zone must be in the region defined in the `subnet_region` variable|
+|machine_type|No|n1-standard-4|Machine type of the  Notebook instance|
+|boot_disk_size|No|200GB|Size of the Notebook instance's boot disk|
+|image_family|No|tf2-ent-latest-gpu|Image family for the Notebook instance|
+|gpu_type|No|null|GPU type of the Notebook instance. By default, the Notebook instance will be provisioned without a GPU|
+|gpu_count|No|null|GPU count of the Notebook instance|
 |install_gpu_driver|No|false|Whether to install a GPU driver|
-|gcs_region|No|Set to subnet_region.|A GCP region for the GCS bucket. It is recommended that the same region is used for both the bucket and the Notebook instance. If not provided the `gcs_region` will be set to `subnet_region`.|
+|gcs_region|No|Set to subnet_region.|GCP region for the GCS bucket. It is recommended that the same region is used for both the bucket and the Notebook instance. If not provided the `gcs_region` will be set to `subnet_region`.|
 |force_destroy|No|false|Whether to force the removal of the bucket on terraform destroy. **Note that by default the bucket will not be destroyed**.|
 
 
