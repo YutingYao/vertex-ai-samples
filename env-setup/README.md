@@ -39,7 +39,7 @@ kpt pkg get $SRC_REPO/env-setup@main $LOCAL_DIR
 cd $LOCAL_DIR/terraform
 ```
 
-- Update the `terraform.tfvars` file with the values reflecting your environment. Alternatively you can provide the values using the Terraform CLI `-var` options in the next step
+- Update the `terraform.tfvars` file with the values reflecting your environment. Alternatively, you can provide the values using the Terraform CLI `-var` options when you execute `terraform apply` in the next step
 
 - Execute the following commands. :
 ```
