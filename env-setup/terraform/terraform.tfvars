@@ -1,4 +1,4 @@
-project_id = "jk-vertex-test1"
+project_id = "jk-vertex-ai-test2"
 subnet_region = "us-west1"
 zone = "us-west1-a"
 name_prefix = "jk-vertex-env"
