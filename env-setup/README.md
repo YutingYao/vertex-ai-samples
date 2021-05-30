@@ -36,12 +36,10 @@ To provision the environment:
 SRC_REPO=https://github.com/jarokaz/vertex-ai-samples
 LOCAL_DIR=vertex-ai-env-setup
 kpt pkg get $SRC_REPO/env-setup@main $LOCAL_DIR
-cd $LOCAL_DIR
+cd $LOCAL_DIR/terraform
 ```
 
-- Set the `vertex-ai-env-setup/terraform` directory as your current directory
-
-- Update the `terraform/terraform.tfvars` file with the values reflecting your environment. Alternatively you can provide the values using the Terraform CLI `-var` options in the next step
+- Update the `terraform.tfvars` file with the values reflecting your environment. Alternatively you can provide the values using the Terraform CLI `-var` options in the next step
 
 - Execute the following commands. :
 ```
