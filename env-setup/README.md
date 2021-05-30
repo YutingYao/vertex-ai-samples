@@ -44,7 +44,7 @@ cd $LOCAL_DIR/terraform
 - Execute the following commands. :
 ```
 terraform init
-terrafrom apply
+terraform apply
 ```
 
 
