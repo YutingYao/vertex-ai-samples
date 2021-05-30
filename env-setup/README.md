@@ -7,7 +7,7 @@ The scripts perform the following actions:
 2. Create a regional GCS bucket
 3. Create an instance of Vertex Notebooks
 
-You can customize your configuration using a set of variables:
+You can customize your configuration using the following variables:
 
 |Variable|Required|Default|Description|
 |--------|--------|-------|-----------|
