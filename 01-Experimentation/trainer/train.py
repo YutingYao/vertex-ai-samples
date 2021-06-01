@@ -174,8 +174,9 @@ def main(argv):
         x=train_dataset,
         validation_data=validation_dataset,
         steps_per_epoch=steps_per_epoch,
-        epochs=epochs,
-        validation_steps=validation_steps)
+        epochs=FLAGS.epochs,
+        validation_steps=validation_steps,
+        callbacks=callbacks)
         
     # Save trained model
     logging.info('Training completed. Saving the trained model to: {}'.format(model_dir))
