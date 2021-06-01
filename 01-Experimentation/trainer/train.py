@@ -14,220 +14,172 @@
 # See the License for the specific language governing permissions and
 
 import os
+import numpy as np
+
 import tensorflow as tf
 import tensorflow_hub as hub
-import tensorflow_text as text
+import tensorflow_datasets as tfds
+import tensorflow_text as text  # A dependency of the preprocessing model
+import tensorflow_addons as tfa
 
 from absl import app
 from absl import flags
 from absl import logging
-from official.nlp import optimization 
 
+from official.nlp import optimization
 
 TFHUB_HANDLE_ENCODER = 'https://tfhub.dev/tensorflow/bert_en_uncased_L-12_H-768_A-12/3'
 TFHUB_HANDLE_PREPROCESS = 'https://tfhub.dev/tensorflow/bert_en_uncased_preprocess/3'
-LOCAL_TB_FOLDER = '/tmp/logs'
-LOCAL_SAVED_MODEL_DIR = '/tmp/saved_model'
+TFDS_NAME = 'glue/cola' 
+NUM_CLASSES = 2
+SENTENCE_FEATURE = 'sentence'
+
+LOCAL_MODEL_DIR = '/tmp/saved_model'
+LOCAL_TB_DIR = '/tmp/logs'
+LOCAL_CHECKPOINT_DIR = '/tmp/checkpoints'
 
 FLAGS = flags.FLAGS
-flags.DEFINE_integer('steps_per_epoch', 625, 'Steps per training epoch')
-flags.DEFINE_integer('eval_steps', 150, 'Evaluation steps')
 flags.DEFINE_integer('epochs', 2, 'Nubmer of epochs')
-flags.DEFINE_integer('per_replica_batch_size', 32, 'Per replica batch size')
-flags.DEFINE_string('training_data_path', 'gs://jk-demos-bucket/tfrecords/train', 'Training data GCS path')
-flags.DEFINE_string('validation_data_path', 'gs://jk-demos-bucket/tfrecords/valid', 'Validation data GCS path')
-flags.DEFINE_string('testing_data_path', 'gs://jk-demos-bucket/data/imdb/test', 'Testing data GCS path')
-
-flags.DEFINE_string('job_dir', 'gs://jk-demos-bucket/jobs', 'A base GCS path for jobs')
-flags.DEFINE_enum('strategy', 'multiworker', ['mirrored', 'multiworker'], 'Distribution strategy')
-flags.DEFINE_enum('auto_shard_policy', 'auto', ['auto', 'data', 'file', 'off'], 'Dataset sharing strategy')
+flags.DEFINE_integer('per_replica_batch_size', 16, 'Per replica batch size')
+flags.DEFINE_float('init_lr', 2e-5, 'Initial learning rate')
+flags.DEFINE_float('dropout_ratio', 0.1, 'Dropout ratio')
 
 
+def make_bert_preprocess_model(sentence_features, seq_length=128):
+    """Returns a model mapping string features to BERT inputs."""
 
-auto_shard_policy = {
-    'auto': tf.data.experimental.AutoShardPolicy.AUTO,
-    'data': tf.data.experimental.AutoShardPolicy.DATA,
-    'file': tf.data.experimental.AutoShardPolicy.FILE,
-    'off': tf.data.experimental.AutoShardPolicy.OFF,
-}
+    input_segments = [
+        tf.keras.layers.Input(shape=(), dtype=tf.string, name=ft)
+        for ft in sentence_features]
 
+    # Tokenize the text to word pieces.
+    bert_preprocess = hub.load(TFHUB_HANDLE_PREPROCESS)
+    tokenizer = hub.KerasLayer(bert_preprocess.tokenize, name='tokenizer')
+    segments = [tokenizer(s) for s in input_segments]
 
-def create_unbatched_dataset(tfrecords_folder):
-    """Creates an unbatched dataset in the format required by the 
-       sentiment analysis model from the folder with TFrecords files."""
-    
-    feature_description = {
-        'text_fragment': tf.io.FixedLenFeature([], tf.string, default_value=''),
-        'label': tf.io.FixedLenFeature([], tf.int64, default_value=0),
-    }
-
-    def _parse_function(example_proto):
-        parsed_example = tf.io.parse_single_example(example_proto, feature_description)
-        return parsed_example['text_fragment'], parsed_example['label']
-  
-    file_paths = [f'{tfrecords_folder}/{file_path}' for file_path in tf.io.gfile.listdir(tfrecords_folder)]
-    dataset = tf.data.TFRecordDataset(file_paths)
-    dataset = dataset.map(_parse_function)
-    
-    return dataset
+    # Pack inputs. The details (start/end token ids, dict of output tensors)
+    # are model-dependent, so this gets loaded from the SavedModel.
+    packer = hub.KerasLayer(bert_preprocess.bert_pack_inputs,
+                            arguments=dict(seq_length=seq_length),
+                            name='packer')
+    model_inputs = packer(segments)
+    return tf.keras.Model(input_segments, model_inputs)
 
 
-def configure_dataset(ds, auto_shard_policy):
-    """
-    Optimizes the performance of a dataset.
-    """
-    
-    options = tf.data.Options()
-    options.experimental_distribute.auto_shard_policy = (
-        auto_shard_policy
+def build_classifier_model(num_classes, dropout_ratio):
+    """Creates a text classification model based on BERT encoder."""
+
+    inputs = dict(
+        input_word_ids=tf.keras.layers.Input(shape=(None,), dtype=tf.int32),
+        input_mask=tf.keras.layers.Input(shape=(None,), dtype=tf.int32),
+        input_type_ids=tf.keras.layers.Input(shape=(None,), dtype=tf.int32),
     )
-    
-    ds = ds.repeat(-1).cache()
-    ds = ds.prefetch(buffer_size=tf.data.AUTOTUNE)
-    ds = ds.with_options(options)
-    return ds
+
+    encoder = hub.KerasLayer(TFHUB_HANDLE_ENCODER, trainable=True, name='encoder')
+    net = encoder(inputs)['pooled_output']
+    net = tf.keras.layers.Dropout(rate=dropout_ratio)(net)
+    net = tf.keras.layers.Dense(num_classes, activation=None, name='classifier')(net)
+    return tf.keras.Model(inputs, net, name='prediction')
 
 
-def create_input_pipelines(train_dir, valid_dir, test_dir, batch_size, auto_shard_policy):
-    """Creates input pipelines from Imdb dataset."""
+def get_data_pipeline(in_memory_ds, info, split, 
+                      batch_size,  bert_preprocess_model):
+    """Creates a sentence preprocessing pipeline."""
     
-    train_ds = create_unbatched_dataset(train_dir)
-    train_ds = train_ds.batch(batch_size)
-    train_ds = configure_dataset(train_ds, auto_shard_policy)
-    
-    valid_ds = create_unbatched_dataset(valid_dir)
-    valid_ds = valid_ds.batch(batch_size)
-    valid_ds = configure_dataset(valid_ds, auto_shard_policy)
-    
-    test_ds = create_unbatched_dataset(test_dir)
-    test_ds = test_ds.batch(batch_size)
-    test_ds = configure_dataset(test_ds, auto_shard_policy)
+    is_training = split.startswith('train')
+    dataset = tf.data.Dataset.from_tensor_slices(in_memory_ds[split])
+    num_examples = info.splits[split].num_examples
 
-    return train_ds, valid_ds, test_ds
-
-
-def build_classifier_model(tfhub_handle_preprocess, tfhub_handle_encoder):
-    """Builds a simple binary classification model with BERT trunk."""
-    
-    text_input = tf.keras.layers.Input(shape=(), dtype=tf.string, name='text')
-    preprocessing_layer = hub.KerasLayer(tfhub_handle_preprocess, name='preprocessing')
-    encoder_inputs = preprocessing_layer(text_input)
-    encoder = hub.KerasLayer(tfhub_handle_encoder, trainable=True, name='BERT_encoder')
-    outputs = encoder(encoder_inputs)
-    net = outputs['pooled_output']
-    net = tf.keras.layers.Dropout(0.1)(net)
-    net = tf.keras.layers.Dense(1, activation=None, name='classifier')(net)
-    
-    return tf.keras.Model(text_input, net)
+    if is_training:
+        dataset = dataset.shuffle(num_examples)
+        dataset = dataset.repeat()
+    dataset = dataset.batch(batch_size)
+    dataset = dataset.map(lambda ex: (bert_preprocess_model(ex), ex['label']))
+    dataset = dataset.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
+    return dataset, num_examples
 
 
-def copy_tensorboard_logs(local_path: str, gcs_path: str):
-    """Copies Tensorboard logs from a local dir to a GCS location.
+def set_job_dirs():
+    """Sets job directories based on env variables set by Vertex AI."""
     
-    After training, batch copy Tensorboard logs locally to a GCS location. This can result
-    in faster pipeline runtimes over streaming logs per batch to GCS that can get bottlenecked
-    when streaming large volumes.
+    model_dir = os.getenv('AIP_MODEL_DIR', LOCAL_MODEL_DIR)
+    tb_dir = os.getenv('AIP_TENSORBOARD_LOG_DIR', LOCAL_TB_DIR)
+    checkpoint_dir = os.getenv('AIP_CHECKPOINT_DIR', LOCAL_CHECKPOINT_DIR)
     
-    Args:
-      local_path: local filesystem directory uri.
-      gcs_path: cloud filesystem directory uri.
-    Returns:
-      None.
-    """
-    pattern = '{}/*/events.out.tfevents.*'.format(local_path)
-    local_files = tf.io.gfile.glob(pattern)
-    gcs_log_files = [local_file.replace(local_path, gcs_path) for local_file in local_files]
-    for local_file, gcs_file in zip(local_files, gcs_log_files):
-        tf.io.gfile.copy(local_file, gcs_file)
-
+    return model_dir, tb_dir, checkpoint_dir
+    
 
 def main(argv):
+    """Starts a training run."""
+    
     del argv
-    
-    def _is_chief(task_type, task_id):
-        return ((task_type == 'chief' or task_type == 'worker') and task_id == 0) or task_type is None
-        
-    
     logging.info('Setting up training.')
     logging.info('   epochs: {}'.format(FLAGS.epochs))
-    logging.info('   steps_per_epoch: {}'.format(FLAGS.steps_per_epoch))
-    logging.info('   eval_steps: {}'.format(FLAGS.eval_steps))
-    logging.info('   strategy: {}'.format(FLAGS.strategy))
-    
-    if FLAGS.strategy == 'mirrored':
-        strategy = tf.distribute.MirroredStrategy()
-    else:
-        strategy = tf.distribute.MultiWorkerMirroredStrategy()
-        
-    if strategy.cluster_resolver:    
-        task_type, task_id = (strategy.cluster_resolver.task_type,
-                              strategy.cluster_resolver.task_id)
-    else:
-        task_type, task_id =(None, None)
-        
+    logging.info('   per_replica_batch_size: {}'.format(FLAGS.per_replica_batch_size))
+    logging.info('   init_lr: {}'.format(FLAGS.init_lr))
+    logging.info('   dropout_ratio: {}'.format(FLAGS.dropout_ratio))
+
+    # Set distribution strategy
+    strategy = tf.distribute.MirroredStrategy()
     
     global_batch_size = (strategy.num_replicas_in_sync *
                          FLAGS.per_replica_batch_size)
     
+    # Configure input data pipelines
+    tfds_info = tfds.builder(TFDS_NAME).info
+    num_classes = tfds_info.features['label'].num_classes
+    num_examples = tfds_info.splits.total_num_examples
+    available_splits = list(tfds_info.splits.keys())
+    labels_names = tfds_info.features['label'].names
     
-    train_ds, valid_ds, test_ds = create_input_pipelines(
-        FLAGS.training_data_path,
-        FLAGS.validation_data_path,
-        FLAGS.testing_data_path,
-        global_batch_size,
-        auto_shard_policy[FLAGS.auto_shard_policy])
+    with tf.device('/job:localhost'):
+        in_memory_ds = tfds.load(TFDS_NAME, batch_size=-1, shuffle_files=True)
         
-    num_train_steps = FLAGS.steps_per_epoch * FLAGS.epochs
-    num_warmup_steps = int(0.1*num_train_steps)
-    init_lr = 3e-5
+    bert_preprocess_model = make_bert_preprocess_model([SENTENCE_FEATURE])
+
+    train_dataset, train_data_size = get_data_pipeline(
+        in_memory_ds, tfds_info, 'train', global_batch_size, bert_preprocess_model)
+
+    validation_dataset, validation_data_size = get_data_pipeline(
+        in_memory_ds, tfds_info, 'validation', global_batch_size, bert_preprocess_model)
+    
+    # Configure the model
+    steps_per_epoch = train_data_size // global_batch_size
+    num_train_steps = steps_per_epoch * FLAGS.epochs
+    num_warmup_steps = num_train_steps // 10
+    validation_steps = validation_data_size // global_batch_size
     
     with strategy.scope():
-        model = build_classifier_model(TFHUB_HANDLE_PREPROCESS, TFHUB_HANDLE_ENCODER)
-        loss = tf.keras.losses.BinaryCrossentropy(from_logits=True)
-        metrics = tf.metrics.BinaryAccuracy()
+        classifier_model = build_classifier_model(NUM_CLASSES, FLAGS.dropout_ratio)
         optimizer = optimization.create_optimizer(
-            init_lr=init_lr,
+            init_lr=FLAGS.init_lr,
             num_train_steps=num_train_steps,
             num_warmup_steps=num_warmup_steps,
             optimizer_type='adamw')
-
-        model.compile(optimizer=optimizer,
-                      loss=loss,
-                      metrics=metrics)
-        
-    # Configure BackupAndRestore callback
-    backup_dir = '{}/backupandrestore'.format(FLAGS.job_dir)
-    callbacks = [tf.keras.callbacks.experimental.BackupAndRestore(backup_dir=backup_dir)]
+        loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+        metrics = tf.keras.metrics.SparseCategoricalAccuracy(
+            'accuracy', dtype=tf.float32)
     
-    # Configure TensorBoard callback on Chief
-    if _is_chief(task_type, task_id):
-        callbacks.append(tf.keras.callbacks.TensorBoard(
-            log_dir=LOCAL_TB_FOLDER, update_freq='batch'))
+    classifier_model.compile(optimizer=optimizer, loss=loss, metrics=[metrics])
+    
+    model_dir, tb_dir, checkpoint_dir = set_job_dirs()
+
+    # Configure Keras callbacks
+    callbacks = [tf.keras.callbacks.experimental.BackupAndRestore(backup_dir=checkpoint_dir)]
+    callbacks.append(tf.keras.callbacks.TensorBoard(
+            log_dir=tb_dir, update_freq='batch'))
     
     logging.info('Starting training ...')
-    
-    history = model.fit(x=train_ds,
-                        validation_data=valid_ds,
-                        steps_per_epoch=FLAGS.steps_per_epoch,
-                        validation_steps=FLAGS.eval_steps,
-                        epochs=FLAGS.epochs,
-                        callbacks=callbacks)
-
-    if _is_chief(task_type, task_id):
-        # Copy tensorboard logs to GCS
-        tb_logs = '{}/tb_logs'.format(FLAGS.job_dir)
-        logging.info('Copying TensorBoard logs to: {}'.format(tb_logs))
-        copy_tensorboard_logs(LOCAL_TB_FOLDER, tb_logs)
-        saved_model_dir = '{}/saved_model'.format(FLAGS.job_dir)
-    else:
-        saved_model_dir = LOCAL_SAVED_MODEL_DIR
+    classifier_model.fit(
+        x=train_dataset,
+        validation_data=validation_dataset,
+        steps_per_epoch=steps_per_epoch,
+        epochs=epochs,
+        validation_steps=validation_steps)
         
     # Save trained model
-    saved_model_dir = '{}/saved_model'.format(FLAGS.job_dir)
-    logging.info('Training completed. Saving the trained model to: {}'.format(saved_model_dir))
-    model.save(saved_model_dir)
-    #tf.saved_model.save(model, saved_model_dir)
-    
+    logging.info('Training completed. Saving the trained model to: {}'.format(model_dir))
+    classifier_model.save(model_dir)  
     
 if __name__ == '__main__':
     logging.set_verbosity(logging.INFO)
