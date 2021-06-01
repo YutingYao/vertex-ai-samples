@@ -6,5 +6,6 @@
 pip install --user tf-models-official==2.4.0
 pip install --user tensorflow-text==2.4.3
 pip install --user --upgrade tensorflow-datasets
+pip install --user google-cloud-aiplatform
 ```
 
