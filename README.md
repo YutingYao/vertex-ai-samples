@@ -1,14 +1,23 @@
 # vertex-ai-samples
 
-## Install required packages
+
+## Installing Vertex AI Python SDK
+
+```
+pip install --user google-cloud-aiplatform
+```
+
+## Installing additional packages required by the samples
 
 ```
 pip install --user tf-models-official==2.4.0
 pip install --user tensorflow-text==2.4.3
 pip install --user --upgrade tensorflow-datasets
-pip install --user google-cloud-aiplatform
-pip install --user --upgrade google-cloud-storage
 ```
+
+## Vertex AI Python Client documentation
+
+https://googleapis.dev/python/aiplatform/latest/index.html
 
 ## Samples
 
