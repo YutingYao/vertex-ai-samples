@@ -13,4 +13,6 @@ pip install --user --upgrade google-cloud-storage
 ## Samples
 
 https://github.com/GoogleCloudPlatform/ai-platform-samples/tree/master/ai-platform-unified
+https://github.com/googleapis/python-aiplatform/tree/master/samples
+
 
