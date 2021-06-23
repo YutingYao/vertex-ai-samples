@@ -351,7 +351,7 @@
               "--method_name",
               "run"
             ],
-            "image": "gcr.io/ml-pipeline/google-cloud-pipeline-components:0.1.2"
+            "image": "gcr.io/ml-pipeline/google-cloud-pipeline-components:0.1.1"
           }
         },
         "exec-endpoint-create": {
@@ -375,7 +375,7 @@
               "--method_name",
               "create"
             ],
-            "image": "gcr.io/ml-pipeline/google-cloud-pipeline-components:0.1.2"
+            "image": "gcr.io/ml-pipeline/google-cloud-pipeline-components:0.1.1"
           }
         },
         "exec-generate-stats-op": {
@@ -480,7 +480,7 @@
               "--method_name",
               "deploy"
             ],
-            "image": "gcr.io/ml-pipeline/google-cloud-pipeline-components:0.1.2"
+            "image": "gcr.io/ml-pipeline/google-cloud-pipeline-components:0.1.1"
           }
         },
         "exec-validate-stats-op": {
