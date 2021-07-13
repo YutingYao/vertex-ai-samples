@@ -19,7 +19,7 @@ pip install --user kfp==1.6.4 tfx==1.0.0-rc1
 ## Installing Vertex AI Python SDK
 
 ```
-pip install --user google-cloud-aiplatform
+pip install --user --upgrade google-cloud-aiplatform
 ```
 
 ## Vertex AI Python Client documentation
