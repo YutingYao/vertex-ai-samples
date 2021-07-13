@@ -13,7 +13,7 @@ pip install --user --upgrade tensorflow-datasets
 
 ## Installing TFX and KFP
 ```
-pip install --user tfx kfp
+pip install --user kfp==1.6.4 tfx==1.0.0-rc1
 ```
 
 ## Installing Vertex AI Python SDK
