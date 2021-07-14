@@ -1,8 +1,8 @@
 
 # Cloud Notebooks
 
-- REST API reference: 
-- gcloud reference: 
+- REST API reference: https://cloud.google.com/notebooks/docs/reference/rest/v1/projects.locations.instances
+- gcloud reference: https://cloud.google.com/notebooks/docs/create-new#create-command-line
 
 ## REST API examples
 
@@ -32,7 +32,7 @@ cat << EOF > request.json
     "name": "jk-notebook-1",
     "machine_type": "n1-standard-4",
     "instance_owners": [
-         "jarekk@google.com"
+         "user@your-org.com"
     ],
     "vm_image": {
         "project": "deeplearning-platform-release",
