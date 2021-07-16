@@ -54,6 +54,16 @@ curl -X POST \
 -d @request.json \
 https://notebooks.googleapis.com/v1/projects/$PROJECT/locations/$LOCATION/instances?instanceId=$INSTANCE_ID
 
+
+#### Delete an instance
+```
+curl -X POST \
+-H "Authorization: Bearer "$(gcloud auth application-default print-access-token) \
+-H "Content-Type: application/json; charset=utf-8" \
+https://notebooks.googleapis.com/v1/projects/$PROJECT/locations/$LOCATION/instances/$INSTANCE_ID
+```
+
+
 ```
 ## gcloud examples
 
