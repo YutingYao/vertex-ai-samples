@@ -57,7 +57,7 @@ https://notebooks.googleapis.com/v1/projects/$PROJECT/locations/$LOCATION/instan
 
 #### Delete an instance
 ```
-curl -X POST \
+curl -X DELETE \
 -H "Authorization: Bearer "$(gcloud auth application-default print-access-token) \
 -H "Content-Type: application/json; charset=utf-8" \
 https://notebooks.googleapis.com/v1/projects/$PROJECT/locations/$LOCATION/instances/$INSTANCE_ID
