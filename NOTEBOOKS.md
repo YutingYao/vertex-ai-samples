@@ -64,7 +64,6 @@ https://notebooks.googleapis.com/v1/projects/$PROJECT/locations/$LOCATION/instan
 ```
 
 
-```
 ## gcloud examples
 
 ### Creating a notebook instance 
