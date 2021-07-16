@@ -46,13 +46,14 @@ EOF
 #### Submit a request
 
 ```
-INSTANCE_ID=jk-notebook-1
+export INSTANCE_ID=jk-notebook-1
+export ZONE=us-central1-a
 
 curl -X POST \
 -H "Authorization: Bearer "$(gcloud auth application-default print-access-token) \
 -H "Content-Type: application/json; charset=utf-8" \
 -d @request.json \
-https://notebooks.googleapis.com/v1/projects/$PROJECT/locations/$LOCATION/instances?instanceId=$INSTANCE_ID
+https://notebooks.googleapis.com/v1/projects/$PROJECT/locations/$ZONE/instances?instanceId=$INSTANCE_ID
 
 ```
 ## gcloud examples
