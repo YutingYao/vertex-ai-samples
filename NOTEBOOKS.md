@@ -9,7 +9,7 @@
 ### List notebook instances
 
 ```
-export LOCATION=us-central1
+export LOCATION=us-west1-b
 export PROJECT=jk-vertex-demos
 
 
@@ -47,7 +47,6 @@ EOF
 
 ```
 export INSTANCE_ID=jk-notebook-1
-export ZONE=us-central1-a
 
 curl -X POST \
 -H "Authorization: Bearer "$(gcloud auth application-default print-access-token) \
