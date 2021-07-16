@@ -53,7 +53,7 @@ curl -X POST \
 -H "Content-Type: application/json; charset=utf-8" \
 -d @request.json \
 https://notebooks.googleapis.com/v1/projects/$PROJECT/locations/$LOCATION/instances?instanceId=$INSTANCE_ID
-
+```
 
 #### Delete an instance
 ```
